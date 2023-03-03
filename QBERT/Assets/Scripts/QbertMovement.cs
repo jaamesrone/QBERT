@@ -7,12 +7,17 @@ public class QbertMovement : MonoBehaviour
 {
     public float moveDistance = 1f;
 
-    private Vector3 targetPosition;
+    private Vector3 pos;
     private bool isMoving = false;
 
     private void Start()
     {
-        targetPosition = transform.position;
+        pos = transform.position;
+    }
+
+    private void Update()
+    {
+        GameManager.Instance.FallDetection();
     }
 
     private void OnMove(InputValue value)
@@ -22,19 +27,19 @@ public class QbertMovement : MonoBehaviour
             Vector2 inputVector = value.Get<Vector2>();
             if (inputVector == Vector2.up)
             {
-                targetPosition += new Vector3(0f, 0f, -moveDistance);
+                pos += new Vector3(-moveDistance, 0f, 0f);
             }
             else if (inputVector == Vector2.down)
             {
-                targetPosition += new Vector3(0f, 0f, moveDistance);
+                pos += new Vector3(moveDistance, 0f, 0f);
             }
             else if (inputVector == Vector2.left)
             {
-                targetPosition += new Vector3(moveDistance, 0f, 0f);
+                pos += new Vector3(0f, 0f, -moveDistance);
             }
             else if (inputVector == Vector2.right)
             {
-                targetPosition += new Vector3(-moveDistance, 0f, 0f);
+                pos += new Vector3(0f, 0f, moveDistance);
             }
             isMoving = true;
         }
@@ -44,12 +49,11 @@ public class QbertMovement : MonoBehaviour
     {
         if (isMoving)
         {
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveDistance);
-            if (transform.position == targetPosition)
+            transform.position = Vector3.MoveTowards(transform.position, pos, moveDistance);
+            if (transform.position == pos)
             {
                 isMoving = false;
             }
         }
     }
 }
-
