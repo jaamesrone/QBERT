@@ -6,6 +6,11 @@ using TMPro;
 
 public class GameManager : Singleton<GameManager> //GameManager talks/inherit to singleton
 {
+    private Transform RespawnPoint;
+    private Transform SpawnPoint;
+
+    private bool isPaused = false;
+
     public TextMeshProUGUI scoreUI;
     public TextMeshProUGUI livesUI;
 
@@ -14,20 +19,27 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
 
     public float fallLimit = -7f;
 
-    private Transform RespawnPoint;
-    private Transform SpawnPoint;
+    
     public GameObject Player;
     public GameObject PlayerPrefab;
 
-    public Color colorToChangeTo;
+    //public Color colorToChangeTo;
+    //public Color SecondColorToChangeTo;
+
+    public Color[] cubeColor;
 
     public bool allCubesChanged = false;
 
     public Renderer renderer;
+
+    public override void Awake()
+    {
+        base.Awake();
+        cubeColor = new Color[] { Color.gray, Color.yellow, Color.blue, Color.red };
+    }
     // Start is called before the first frame update
     void Start()
     {
-        colorToChangeTo = Color.yellow;
         InitScene();
     }
 
@@ -37,6 +49,7 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
         UpdateScore();
         UpdateLives();
         FallDetection();
+        PauseGame();
     }
 
     public void CheckAllCubesChangedColor()
@@ -47,8 +60,8 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
         // Check if all the cubes have been changed to the target color
         foreach (GameObject cube in cubes)
         {
-            Renderer cubeRenderer = cube.GetComponent<Renderer>();
-            if (cubeRenderer.material.color != colorToChangeTo)
+            CubeColorChange ColorChanger = cube.GetComponent<CubeColorChange>();
+            if (!ColorChanger.targetColor)
             {
                 return;
             }
@@ -61,14 +74,14 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
 
     public void LoadNextLevel()
     {
-        StartCoroutine("LoadSceneCo");
+        StartCoroutine("LoadToNexeLevel");
     }
 
-    private IEnumerator LoadSceneCo()
+    private IEnumerator LoadToNexeLevel()
     {
-        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-        AsyncOperation newScene = SceneManager.LoadSceneAsync(currentSceneIndex+1);
-        while (!newScene.isDone)
+        int currentLevel = SceneManager.GetActiveScene().buildIndex;
+        AsyncOperation nextLevel = SceneManager.LoadSceneAsync(currentLevel+1);
+        while (!nextLevel.isDone)
         {
             yield return null;
         }
@@ -84,7 +97,7 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
 
     public void UpdateScore()
     {
-        scoreUI.text = "Score: " + score.ToString();
+//        scoreUI.text = "Score: " + score.ToString();
     }
 
     public void UpdateLives()
@@ -106,5 +119,29 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
         Player.transform.position = RespawnPoint.position;
         lives--;
         // Optionally, you could also reset any other necessary player state here
+    }
+
+    public void PauseGame()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            TogglePause();
+        }
+    }
+
+    public void TogglePause()
+    {
+        isPaused = !isPaused;
+
+        if (isPaused)
+        {
+            Time.timeScale = 0;
+            SceneManager.LoadScene("PauseMenu", LoadSceneMode.Additive);
+        }
+        else
+        {
+            Time.timeScale = 1;
+            SceneManager.UnloadSceneAsync("PauseMenu");
+        }
     }
 }
