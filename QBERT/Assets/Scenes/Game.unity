@@ -2969,10 +2969,18 @@ MonoBehaviour:
   livesUI: {fileID: 1302289434}
   lives: 3
   score: 0
+  enemySpawn: 0
   fallLimit: -7
   Player: {fileID: 0}
   PlayerPrefab: {fileID: 8209767616505128701, guid: 3a64367027acd49acba87a03d361b2de, type: 3}
+  coilyPrefab: {fileID: 7595500147480742949, guid: 0c4dbfb048fd442ed8a72cdbe1e2f679, type: 3}
+  redEgg: {fileID: 6334972164599421143, guid: b81cfaa25f5194b7c934bacd5c112650, type: 3}
+  UggPrefab: {fileID: 2077043337234126944, guid: 2eed778e699c145b4923ec6b60873c2c, type: 3}
+  WrongWayPrefab: {fileID: 7317643812340669686, guid: 106db0d38055e49af988398bcb5edd56, type: 3}
+  SlickPrefab: {fileID: 1023502044894418525, guid: 511f0544bbc064d96a3ed38907cab47a, type: 3}
+  SamPrefab: {fileID: 6687944014707993898, guid: ff4404fd3936e479cbd023ecdbaabc89, type: 3}
   cubeColor: []
+  Enemies: []
   allCubesChanged: 0
   renderer: {fileID: 0}
 --- !u!1 &1684521125

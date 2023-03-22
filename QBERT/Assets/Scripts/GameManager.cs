@@ -4,33 +4,48 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 
+public enum JumpDirection
+{
+    LeftDown,
+    LeftUp,
+    RightDown,
+    RightUp
+}
+
 public class GameManager : Singleton<GameManager> //GameManager talks/inherit to singleton
 {
+
+    public TextMeshProUGUI scoreUI;
+    public TextMeshProUGUI livesUI;
+
     private Transform RespawnPoint;
     private Transform SpawnPoint;
 
     private bool isPaused = false;
 
-    public TextMeshProUGUI scoreUI;
-    public TextMeshProUGUI livesUI;
-
     public int lives = 3;
     public int score;
+    public int enemySpawn = 0;
 
     public float fallLimit = -7f;
 
-    
     public GameObject Player;
     public GameObject PlayerPrefab;
-
-    //public Color colorToChangeTo;
-    //public Color SecondColorToChangeTo;
+    public GameObject coilyPrefab;
+    public GameObject redEgg;
+    public GameObject UggPrefab;
+    public GameObject WrongWayPrefab;
+    public GameObject SlickPrefab;
+    public GameObject SamPrefab;
 
     public Color[] cubeColor;
+    public List<GameObject> Enemies;
 
     public bool allCubesChanged = false;
 
     public Renderer renderer;
+
+    public bool isLoading;
 
     public override void Awake()
     {
@@ -41,6 +56,8 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
     void Start()
     {
         InitScene();
+        Enemies = new List<GameObject>();
+        InvokeRepeating("AddEnemies", 2.0f, 6f);
     }
 
     // Update is called once per frame
@@ -50,6 +67,37 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
         UpdateLives();
         FallDetection();
         PauseGame();
+    }
+
+    public void AddEnemies()
+    {
+        GameObject enemySpawns = null;
+        if (enemySpawn == 1)
+        {
+            enemySpawns = coilyPrefab;
+        }
+        else if (enemySpawn == 3)
+        {
+            enemySpawns = UggPrefab;
+        }
+        else if (enemySpawn == 4)
+        {
+            enemySpawns = WrongWayPrefab;
+        }
+        else if (enemySpawn == 5)
+        {
+            enemySpawns = SlickPrefab;
+        }
+        else if (enemySpawn == 6)
+        {
+            enemySpawns = SamPrefab;
+        }
+        else
+        {
+            enemySpawns = redEgg;
+        }
+        Enemies.Add(Instantiate(enemySpawns, RespawnPoint.transform.position, transform.rotation));
+        enemySpawn++;
     }
 
     public void CheckAllCubesChangedColor()
@@ -79,12 +127,14 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
 
     private IEnumerator LoadToNexeLevel()
     {
+        isLoading = true;
         int currentLevel = SceneManager.GetActiveScene().buildIndex;
         AsyncOperation nextLevel = SceneManager.LoadSceneAsync(currentLevel+1);
         while (!nextLevel.isDone)
         {
             yield return null;
         }
+        isLoading = false;
         InitScene();
     }
 
@@ -93,11 +143,12 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
         SpawnPoint = GameObject.Find("SpawnPoint").transform;
         RespawnPoint = GameObject.Find("RespawnPoint").transform;
         Player = Instantiate(PlayerPrefab, SpawnPoint.position, SpawnPoint.rotation);
+        enemySpawn = 0;
     }
 
     public void UpdateScore()
     {
-//        scoreUI.text = "Score: " + score.ToString();
+       scoreUI.text = "Score: " + score.ToString();
     }
 
     public void UpdateLives()
@@ -107,14 +158,18 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
 
     public void FallDetection()
     {
-        if (Player.transform.position.y < fallLimit)
+        if (!isLoading)
         {
-            Respawn();
+            if (Player.transform.position.y < fallLimit)
+            {
+                Respawn();
+            }
         }
+      
     }
 
 
-    private void Respawn()
+    public void Respawn()
     {
         Player.transform.position = RespawnPoint.position;
         lives--;
@@ -144,4 +199,7 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
             SceneManager.UnloadSceneAsync("PauseMenu");
         }
     }
+
+
+    
 }
