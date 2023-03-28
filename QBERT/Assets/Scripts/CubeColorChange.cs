@@ -5,10 +5,9 @@ using UnityEngine.SceneManagement;
 
 public class CubeColorChange : MonoBehaviour
 {
-    private Color originalColor;
     private Renderer renderer;
-    private bool allCubesChanged = false;
-    private int currentCubeColor = 0;
+    private bool hasBeenSteppedOn = false;
+    public int currentCubeColor = 0;
     public int maxColorIndex;
     public bool targetColor;
 
@@ -19,40 +18,46 @@ public class CubeColorChange : MonoBehaviour
         renderer.material.color = GameManager.Instance.cubeColor[currentCubeColor];
     }
 
-
     void Update()
     {
-        // Check if all the cubes have been changed
-        // and if so, make the debug log statement
-        if (allCubesChanged == true)
-        {
-            Debug.Log("Completed!");
-        }
+
     }
 
-
-    private void OnCollisionEnter(Collision other)
+private void OnCollisionEnter(Collision other)
     {
         // If the player collides with the cube, change the color of the cube
-        if (other.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player")) //oncollision with qbert touching to cube. cube changes color.  
         {
+            if (!hasBeenSteppedOn)
+            {
+                GameManager.Instance.score += 25;
+                GameManager.Instance.UpdateScore();
+                hasBeenSteppedOn = true;
+
+            }
             currentCubeColor++;
-            if (currentCubeColor>maxColorIndex)
+            if (currentCubeColor > maxColorIndex)
             {
                 return;
             }
+
             else
             {
-                if (currentCubeColor==maxColorIndex)
+                if (currentCubeColor == maxColorIndex)
                 {
                     targetColor = true;
                 }
                 renderer.material.color = GameManager.Instance.cubeColor[currentCubeColor];
                 GameManager.Instance.CheckAllCubesChangedColor();
             }
-           
-        
+        }
+        else if (other.gameObject.tag == "Slick" || other.gameObject.tag == "Sam")
+        {
+                currentCubeColor=0;
+                renderer.material.color = GameManager.Instance.cubeColor[currentCubeColor];
+                hasBeenSteppedOn = false;
+            
+            
         }
     }
-
 }

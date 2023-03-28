@@ -10,16 +10,26 @@ public class GameSceneTransitions : MonoBehaviour
 
     private void Start()
     {
-        playButton.onClick.AddListener(LoadQbertGame);
-      
-    }
+        if (playButton!=null)
+        {
+            playButton.onClick.AddListener(LoadQbertGame);
+        }
 
+    }
 
     public void LoadQbertGame()
     {
 
-        SceneManager.LoadScene(2);
+        SceneManager.LoadScene(3);
 
+    }
+
+    public void restart() //restarting gaming
+    {
+        GameManager.Instance.score = 0;
+        GameManager.Instance.rounds = 1;
+        GameManager.Instance.lives = 3;
+        GameManager.Instance.LoadNextLevel(3);
     }
 
     public void QuitGame()
@@ -31,16 +41,4 @@ public class GameSceneTransitions : MonoBehaviour
     {
         GameManager.Instance.TogglePause();
     }
-
-    /*
-    public void GoBack()
-    {
-        SceneManager.LoadScene(0);
-    }
-
-    public void GoToControls()
-    {
-        SceneManager.LoadScene(1);
-    }
-    */
 }

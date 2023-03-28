@@ -10,12 +10,9 @@ public class QbertMovement : Player
     {
         pos = transform.position;
     }
-
-  
-
     private void OnMove(InputValue value)
     {
-        if (!isMoving)
+        if (!isMoving) //qbert movement with unity's new input controls. 
         {
             Vector2 inputVector = value.Get<Vector2>();
             if (inputVector == Vector2.up)
@@ -36,7 +33,5 @@ public class QbertMovement : Player
             }
         }
     }
-
-    
 }
 

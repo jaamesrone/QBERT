@@ -16,36 +16,40 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
 {
 
     public TextMeshProUGUI scoreUI;
+    public TextMeshProUGUI roundsUI;
     public TextMeshProUGUI livesUI;
 
-    private Transform RespawnPoint;
+    public Transform RespawnPoint;
     private Transform SpawnPoint;
 
-    private bool isPaused = false;
-
+    public int rounds = 1;
     public int lives = 3;
     public int score;
     public int enemySpawn = 0;
 
     public float fallLimit = -7f;
 
+    public GameObject CoilyPrefab;
     public GameObject Player;
     public GameObject PlayerPrefab;
-    public GameObject coilyPrefab;
+    public GameObject purpleEggPrefab;
     public GameObject redEgg;
     public GameObject UggPrefab;
     public GameObject WrongWayPrefab;
     public GameObject SlickPrefab;
     public GameObject SamPrefab;
+    public GameObject GreenEgg;
 
     public Color[] cubeColor;
     public List<GameObject> Enemies;
 
-    public bool allCubesChanged = false;
-
     public Renderer renderer;
 
     public bool isLoading;
+    private bool isPaused = false;
+    public bool allCubesChanged = false;
+
+    public GameObject canvas;
 
     public override void Awake()
     {
@@ -55,26 +59,45 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
     // Start is called before the first frame update
     void Start()
     {
-        InitScene();
+        thisScene();
         Enemies = new List<GameObject>();
-        InvokeRepeating("AddEnemies", 2.0f, 6f);
+        InvokeRepeating("AddEnemies", 2.0f, 2.5f); //2.5f or 2.8 or 3
+    }
+
+    public override void DestroyObjecet()
+    {
+        Destroy(canvas);
+        Destroy(gameObject);
+    }
+
+    public override void DontDestroyObject()
+    {
+        DontDestroyOnLoad(canvas);
+        DontDestroyOnLoad(gameObject);
     }
 
     // Update is called once per frame
     void Update()
     {
         UpdateScore();
+        UpdateRounds();
         UpdateLives();
         FallDetection();
         PauseGame();
     }
 
-    public void AddEnemies()
+    public void AddEnemies()//a list of gameobjects objects being assigned. then they get instantiated when enemySpawn increases. 
     {
         GameObject enemySpawns = null;
-        if (enemySpawn == 1)
+    
+        
+        if (enemySpawn == 1) 
         {
-            enemySpawns = coilyPrefab;
+            enemySpawns = GreenEgg;
+        }
+        else if (enemySpawn == 2)
+        {
+            enemySpawns = purpleEggPrefab;
         }
         else if (enemySpawn == 3)
         {
@@ -96,8 +119,25 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
         {
             enemySpawns = redEgg;
         }
-        Enemies.Add(Instantiate(enemySpawns, RespawnPoint.transform.position, transform.rotation));
+
+        if (enemySpawns==UggPrefab )
+        {
+            Instantiate(UggPrefab, new Vector3(1, -6, 5), transform.rotation);
+        }
+        else if (enemySpawns == WrongWayPrefab)
+        {
+            Instantiate(WrongWayPrefab, new Vector3(5, -6, 1), transform.rotation);
+        }
+        else
+        {
+            Enemies.Add(Instantiate(enemySpawns, RespawnPoint.transform.position, transform.rotation));
+        }
         enemySpawn++;
+        if (enemySpawn >= 7)
+        {
+            enemySpawn = 0;
+            
+        }
     }
 
     public void CheckAllCubesChangedColor()
@@ -117,38 +157,52 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
 
         // All the cubes have been changed to the target color
         allCubesChanged = true;
-        LoadNextLevel();
+        LoadNextLevel(SceneManager.GetActiveScene().buildIndex+1);
     }
 
-    public void LoadNextLevel()
+    public void LoadNextLevel(int sceneNum) //loads to the next level and if parameter is > 5 restart!
     {
-        StartCoroutine("LoadToNexeLevel");
+        if (sceneNum>5)
+        {
+            sceneNum = 1;
+        }
+        StartCoroutine(LoadToNextLevel(sceneNum));
     }
 
-    private IEnumerator LoadToNexeLevel()
+    private IEnumerator LoadToNextLevel(int sceneNum) //loads to the next level and finds gameobjects to get assigned.
     {
         isLoading = true;
-        int currentLevel = SceneManager.GetActiveScene().buildIndex;
-        AsyncOperation nextLevel = SceneManager.LoadSceneAsync(currentLevel+1);
+        AsyncOperation nextLevel = SceneManager.LoadSceneAsync(sceneNum);
         while (!nextLevel.isDone)
         {
             yield return null;
         }
         isLoading = false;
-        InitScene();
+        thisScene();
+        rounds++;
+
     }
 
-    private void InitScene()
+    public void thisScene() //finds gameobjects to assign themself, due to them destroying. 
     {
-        SpawnPoint = GameObject.Find("SpawnPoint").transform;
-        RespawnPoint = GameObject.Find("RespawnPoint").transform;
-        Player = Instantiate(PlayerPrefab, SpawnPoint.position, SpawnPoint.rotation);
-        enemySpawn = 0;
+        if (SceneManager.GetActiveScene().buildIndex>=3&&SceneManager.GetActiveScene().buildIndex<=5)
+        {
+            SpawnPoint = GameObject.Find("SpawnPoint").transform;
+            RespawnPoint = GameObject.Find("RespawnPoint").transform;
+            Player = Instantiate(PlayerPrefab, SpawnPoint.position, SpawnPoint.rotation);
+        }
+
+        enemySpawn = 0; //restarts enemies 
     }
 
     public void UpdateScore()
     {
        scoreUI.text = "Score: " + score.ToString();
+    }
+
+    public void UpdateRounds()
+    {
+        roundsUI.text = "Rounds: " + rounds.ToString();
     }
 
     public void UpdateLives()
@@ -160,7 +214,7 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
     {
         if (!isLoading)
         {
-            if (Player.transform.position.y < fallLimit)
+            if (Player!=null&&Player.transform.position.y < fallLimit)
             {
                 Respawn();
             }
@@ -173,18 +227,29 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
     {
         Player.transform.position = RespawnPoint.position;
         lives--;
-        // Optionally, you could also reset any other necessary player state here
+        if (lives <= 0)
+        {
+            Player.SetActive(false);
+            GameOver();
+        }
+        
     }
 
-    public void PauseGame()
+
+    public void GameOver()
+    {
+        SceneManager.LoadScene(1);
+    }
+
+    public void PauseGame() //pres esc to pause the game.
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             TogglePause();
         }
     }
-
-    public void TogglePause()
+    
+    public void TogglePause()//sets time to 1 to freeze time. 
     {
         isPaused = !isPaused;
 
@@ -198,8 +263,5 @@ public class GameManager : Singleton<GameManager> //GameManager talks/inherit to
             Time.timeScale = 1;
             SceneManager.UnloadSceneAsync("PauseMenu");
         }
-    }
-
-
-    
+    }    
 }

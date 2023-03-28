@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Coily : Player
-{ 
+{
+    bool updateScore = false;
     public override void Update()
     {
-        if (isMoving == false)
+        if (isMoving == false) //coily jump directino derived from my player script
         {
             Vector3 playerPos = GameManager.Instance.Player.transform.position;
             if (transform.position.x >= playerPos.x)
@@ -32,13 +33,14 @@ public class Coily : Player
                 }
             }
         }
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Player"))
+        else if(updateScore == false) //updates score whenever coily jumps after qbert. 
         {
-            GameManager.Instance.Respawn();
+            updateScore = true;
+            if (transform.position.y <= GameManager.Instance.fallLimit)
+            {
+              Debug.Log("hi i fell ");
+              GameManager.Instance.score += 500;
+            }
         }
     }
 }

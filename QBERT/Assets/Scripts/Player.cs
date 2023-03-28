@@ -10,12 +10,48 @@ public class Player : MonoBehaviour
     public Vector3 pos;
 
 
+
     public virtual void Update()
     {
         
     }
 
-    public void Jumping(JumpDirection dir)
+    private void OnCollisionEnter(Collision collision)//focuses on respawning, adding score, and respawning QBERT.
+    {
+        if (collision.gameObject.tag == "RedEgg")
+        {
+            GameManager.Instance.Respawn();
+        }
+        else if (collision.gameObject.tag == "PurpleEgg")
+        {
+            GameManager.Instance.Respawn();
+        }
+        else if (collision.gameObject.tag == "Slick")
+        {
+            GameManager.Instance.score += 300;
+            Destroy(collision.gameObject);
+
+        }
+        else if (collision.gameObject.tag == "Sam")
+        {
+            GameManager.Instance.score += 300;
+            Destroy(collision.gameObject);
+        }
+        else if (collision.gameObject.tag == "Coily")
+        {
+            GameManager.Instance.Respawn();
+            Destroy(collision.gameObject);
+        }
+        else if (collision.gameObject.tag == "GreenEgg")
+        {
+            GameManager.Instance.score += 100;
+            Destroy(collision.gameObject);
+        }
+
+    }
+
+
+    public void Jumping(JumpDirection dir) //Jumping mechanic thats attached to multiple enemies. 
     {
         isMoving = true;
         pos = transform.position;
@@ -43,7 +79,7 @@ public class Player : MonoBehaviour
           
     }
 
-    IEnumerator JumpAnimation(Vector3 targetPos)
+    IEnumerator JumpAnimation(Vector3 targetPos) //Jumping Animation that gets the transform.positions and 
     {
         while (Vector3.Distance(transform.position,targetPos)>0.2f)
         {
